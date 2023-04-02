@@ -15,7 +15,6 @@ class AppController {
     try {
       const { userName } = req.body;
       const passcode = generateSecretRoomPassCode();
-
       if (!userName) {
         return res.status(400).json({ error: 'Kindly provide username' });
       }
@@ -23,16 +22,17 @@ class AppController {
         return res.status(500).json({ error: 'Something went wrong' });
       }
 
-      const admin = await Member.create({ userName });
+      const member = await Member.create({ userName, role: 'admin' });
       const room = await Room.create({
         roomPassCode: passcode,
-        members: admin._id,
+        members: member._id,
       });
 
       return res.status(201).json({
         id: room._id,
         passcode: room.roomPassCode,
-        admin: admin.userName,
+        member: member.userName,
+        role: member.role,
       });
     } catch (err) {
       return next(err);
@@ -51,7 +51,6 @@ class AppController {
       }
 
       const room = await Room.findOne({ roomPassCode: passCode });
-
       if (!room) {
         return res.status(400).json({ error: 'Invalid room passcode' });
       }
@@ -61,8 +60,9 @@ class AppController {
         room.save();
       }
 
+      const admin = room.members.at(0);
       return res.status(200).json({
-        message: `You have been successfully added to the room with ${passCode}`,
+        message: `You have been successfully added to the room created by ${admin.userName}`,
       });
     } catch (err) {
       return next(err);

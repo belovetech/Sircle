@@ -11,6 +11,10 @@ const memberSchema = new mongoose.Schema({
     default: true,
     select: false,
   },
+  role: {
+    type: String,
+    default: 'member',
+  },
 });
 
 const Member = mongoose.model('Member', memberSchema);
