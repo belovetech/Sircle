@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
+const memberSchema = new mongoose.Schema({
   userName: {
-    type: string,
+    type: String,
     required: [true, 'Kindly, provide your username'],
   },
   photo: String,
@@ -13,5 +13,5 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-const User = mongoose.Model('User', UserSchema);
-module.exports = User;
+const Member = mongoose.model('Member', memberSchema);
+module.exports = Member;

@@ -2,15 +2,15 @@ const mongoose = require('mongoose');
 
 const RoomSchema = new mongoose.Schema({
   roomPassCode: {
-    type: string,
+    type: String,
     unique: true,
     required: [true, 'Kindly, provide the room passcode'],
-    minLength: [6, 'Passcode must be a 6 digits'],
+    minLength: [7, 'Passcode must be a 7 characters'],
   },
-  users: [
+  members: [
     {
       type: mongoose.Schema.ObjectId,
-      ref: 'User',
+      ref: 'Member',
     },
   ],
   createdAt: {
@@ -19,5 +19,12 @@ const RoomSchema = new mongoose.Schema({
   },
 });
 
-const Room = mongoose.Model('Room', RoomSchema);
+RoomSchema.pre(/find/, function (next) {
+  this.populate({ path: 'members', select: '-__v' });
+  next();
+});
+
+RoomSchema.index({ members: 1 });
+
+const Room = mongoose.model('Room', RoomSchema);
 module.exports = Room;
