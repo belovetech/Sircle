@@ -1,4 +1,4 @@
-const generateSecretRoomPassCode = () => {
+const generateRoomPassCode = () => {
   const alphabetNumeric = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let res = '';
   const len = 6;
@@ -10,4 +10,4 @@ const generateSecretRoomPassCode = () => {
   return `${res.slice(0, 3)}-${res.slice(3)}`;
 };
 
-module.exports = generateSecretRoomPassCode;
+module.exports = generateRoomPassCode;
