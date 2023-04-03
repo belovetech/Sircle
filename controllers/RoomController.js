@@ -3,12 +3,21 @@ const Room = require('../models/roomModel');
 const Member = require('../models/memberModel');
 const generateSecretRoomPassCode = require('../utils/generateSecretRoomPassCode');
 
-class AppController {
+class RoomController {
   static async getStatus(req, res, next) {
     if (db.isAlive()) {
       return res.status(200).send('Everything is cool!');
     }
     return res.status(500).send('Something went wrong');
+  }
+
+  static async getStats(req, res, next) {
+    const rooms = await Room.find();
+    const members = await Member.find();
+
+    return res
+      .status(200)
+      .json({ Rooms: rooms.length, Members: members.length });
   }
 
   static async createRoom(req, res, next) {
@@ -61,8 +70,13 @@ class AppController {
       }
 
       const admin = room.members.at(0);
+      const message = `You have been successfully added to the room created by ${admin.userName}`;
       return res.status(200).json({
-        message: `You have been successfully added to the room created by ${admin.userName}`,
+        message,
+        data: {
+          id: member._id,
+          userName,
+        },
       });
     } catch (err) {
       return next(err);
@@ -74,11 +88,32 @@ class AppController {
       const room = await Room.findOne({
         roomPassCode: req.params.passcode,
       }).select('-__v');
-      return res.status(200).json(room);
+      return res.status(200).json({
+        roomPasscode: room.roomPassCode,
+        admin: room.members.at[0].userName,
+        members: room.members.length - 1,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  static async getRooms(req, res, next) {
+    try {
+      const rooms = await Room.find();
+      const ArrRooms = rooms.map((room) => ({
+        roomPasscode: room.roomPassCode,
+        admin: room.members[0].userName,
+        members: room.members.map((member) => member.userName),
+      }));
+
+      return res
+        .status(200)
+        .json({ results: ArrRooms.length, rooms: ArrRooms });
     } catch (err) {
       return next(err);
     }
   }
 }
 
-module.exports = AppController;
+module.exports = RoomController;

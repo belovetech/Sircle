@@ -1,11 +1,13 @@
 const express = require('express');
-const AppController = require('../controllers/AppController');
+const RoomController = require('../controllers/RoomController');
 
 const router = express.Router();
 
-router.get('/status', AppController.getStatus);
-router.post('/room', AppController.createRoom);
-router.get('/room/:passcode', AppController.getRoom);
-router.post('/join-room', AppController.joinRoom);
+router.get('/status', RoomController.getStatus);
+router.get('/stats', RoomController.getStats);
+router.post('/rooms', RoomController.createRoom);
+router.get('/rooms', RoomController.getRooms);
+router.get('/rooms/:passcode', RoomController.getRoom);
+router.post('/join-room', RoomController.joinRoom);
 
 module.exports = router;
