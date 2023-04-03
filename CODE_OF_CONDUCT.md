@@ -1,4 +1,4 @@
-# Code of Conduct - Chat-App
+# Code of Conduct - Sircle
 
 ## Our Pledge
 
