@@ -5,6 +5,8 @@ const Room = require('../models/roomModel');
 const Member = require('../models/memberModel');
 const generateRoomPassCode = require('../utils/generateRoomPassCode');
 const formatResponse = require('../utils/formatResponse');
+const error500Handler = require('../utils/error500Handler');
+const convertMsToTime = require('../utils/convertMsToTime');
 
 class RoomController {
   static async getStatus(req, res, next) {
@@ -29,7 +31,7 @@ class RoomController {
 
   static async createRoom(req, res, next) {
     try {
-      const passcode = generateRoomPassCode();
+      const passCode = generateRoomPassCode();
       const { userName } = req.body;
       // eslint-disable-next-line no-restricted-globals
       if (!userName || !isNaN(userName)) {
@@ -37,31 +39,31 @@ class RoomController {
           .status(400)
           .json({ error: 'Kindly provide a valid username' });
       }
-      if (!passcode) {
+      if (!passCode) {
         return res.status(500).json({ error: 'Something went wrong' });
       }
 
       const member = await Member.create({ userName, role: 'admin' });
       const room = await Room.create({
-        roomPassCode: passcode,
+        passCode,
         members: member._id,
       });
 
       return res.status(201).json({
         id: room._id,
-        passcode: room.roomPassCode,
+        passCode: room.passCode,
         admin: member.userName,
         members: room.members.length - 1,
       });
     } catch (err) {
-      return next(err);
+      error500Handler(res, err);
     }
   }
 
   static async getRoom(req, res, next) {
     try {
       const room = await Room.findOne({
-        roomPassCode: req.params.passcode,
+        passCode: req.params.passCode,
       }).select('-__v');
       if (!room) {
         return res.status(404).json({ error: 'The room does not exist.' });
@@ -70,7 +72,7 @@ class RoomController {
       const admin = members.shift();
 
       return res.status(200).json({
-        roomPasscode: room.roomPassCode,
+        passCode: room.passCode,
         admin,
         members: {
           results: members.length,
@@ -78,7 +80,7 @@ class RoomController {
         },
       });
     } catch (err) {
-      return next(err);
+      error500Handler(res, err);
     }
   }
 
@@ -89,7 +91,7 @@ class RoomController {
         const members = room.members.map((member) => formatResponse(member));
         const admin = members.shift();
         return {
-          roomPasscode: room.roomPassCode,
+          passCode: room.passCode,
           admin,
           members,
         };
@@ -100,7 +102,7 @@ class RoomController {
         rooms: ArrRooms,
       });
     } catch (err) {
-      return next(err);
+      error500Handler(res, err);
     }
   }
 
@@ -116,12 +118,12 @@ class RoomController {
       if (!passCode || passCode.length < 7) {
         return res
           .status(400)
-          .json({ error: 'Provide the valid room passcode' });
+          .json({ error: 'Provide the valid room passCode' });
       }
 
-      const room = await Room.findOne({ roomPassCode: passCode });
+      const room = await Room.findOne({ passCode });
       if (!room) {
-        return res.status(400).json({ error: 'Invalid room passcode' });
+        return res.status(400).json({ error: 'Invalid room passCode' });
       }
       const member = await Member.create({ userName });
       if (Array.isArray(room.members)) {
@@ -136,23 +138,23 @@ class RoomController {
         data: formatResponse(member),
       });
     } catch (err) {
-      return next(err);
+      error500Handler(res, err);
     }
   }
 
   static async leaveRoom(req, res, next) {
     try {
       const { memberId } = req.params;
-      const { passcode } = req.query;
+      const { passCode } = req.query;
       if (!memberId) {
         return res.status(400).json({ error: 'memberId should be provided' });
       }
-      if (!passcode) {
+      if (!passCode) {
         return res
           .status(400)
-          .json({ error: 'Room passcode should be provided' });
+          .json({ error: 'Room passCode should be provided' });
       }
-      const room = await Room.findOne({ roomPassCode: passcode });
+      const room = await Room.findOne({ passCode });
       if (!room) {
         return res.status(404).json({ error: 'The room does not exist.' });
       }
@@ -172,24 +174,24 @@ class RoomController {
       }
 
       return res
-        .status(204)
+        .status(200)
         .json({ message: `${currentMember.userName} left the room` });
     } catch (err) {
-      return next(err);
+      error500Handler(res, err);
     }
   }
 
   static async deleteRoom(req, res, next) {
     try {
       const { adminId } = req.params;
-      const { passcode } = req.query;
+      const { passCode } = req.query;
       if (!adminId) {
         return res.status(400).json({ error: 'admin ID should be provided' });
       }
-      if (!passcode) {
+      if (!passCode) {
         return res
           .status(400)
-          .json({ error: 'Room passcode should be provided' });
+          .json({ error: 'Room passCode should be provided' });
       }
       const admin = await Member.findById(adminId);
       if (!admin || admin.role !== 'admin') {
@@ -197,18 +199,44 @@ class RoomController {
           .status(403)
           .json({ error: 'Only admin can dissolve the room' });
       }
-      const room = await Room.findOne({ roomPassCode: passcode });
+      const room = await Room.findOne({ passCode });
       if (!room) {
         return res.status(404).json({ error: 'The room does not exist.' });
       }
+
       room.members.forEach((member) => {
         RoomController.delete(Member, member._id);
       });
 
       RoomController.delete(Room, room._id);
-      return res.status(204).json({ message: 'Room successfully dissolved' });
+      return res.status(200).json({ message: 'Room successfully dissolved' });
     } catch (err) {
-      return next(err);
+      error500Handler(res, err);
+    }
+  }
+
+  static async deleteRoomAfter5Hours(req, res, next) {
+    try {
+      const { passCode } = req.query;
+      const room = await Room.findOne({ passCode });
+      if (!room) {
+        return res.status(404).json({ error: 'The room does not exist.' });
+      }
+
+      const timeLeft = room.timeTTL - new Date();
+      if (timeLeft <= 0) {
+        room.members.forEach((member) => {
+          RoomController.delete(Member, member._id);
+        });
+        RoomController.delete(Room, room._id);
+        return res.status(200).json({ message: 'Room successfully dissolved' });
+      }
+      return res.status(200).json({
+        message: `Time left: ${convertMsToTime(timeLeft)}`,
+        time: convertMsToTime(timeLeft),
+      });
+    } catch (err) {
+      error500Handler(res, err);
     }
   }
 

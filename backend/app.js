@@ -6,6 +6,8 @@ const morgan = require('morgan');
 const path = require('path');
 
 const roomRouter = require('./routes/roomRouter');
+// const fireAutomaticDissolve = require('./utils/fireAutomaticDissolve');
+// const { setTimeout } = require('timers/promises');
 
 // APP
 const app = express();
@@ -27,6 +29,9 @@ app.use(cors(corOptions));
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// Dissolve Room after 5hrs of active
+// setTimeout(5000, fireAutomaticDissolve);
 
 app.use('/rooms', roomRouter);
 

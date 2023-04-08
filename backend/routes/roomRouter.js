@@ -8,9 +8,10 @@ router
   .get('/stats', RoomController.getStats)
   .post('/', RoomController.createRoom)
   .get('/', RoomController.getRooms)
-  .get('/:passcode', RoomController.getRoom)
+  .get('/:passCode', RoomController.getRoom)
   .post('/join-room', RoomController.joinRoom)
   .delete('/leave-room/:memberId', RoomController.leaveRoom)
-  .delete('/delete-room/:adminId', RoomController.deleteRoom);
+  .delete('/delete-room/:adminId', RoomController.deleteRoom)
+  .delete('/dissolve-room/', RoomController.deleteRoomAfter5Hours);
 
 module.exports = router;
