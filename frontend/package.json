@@ -1,0 +1,19 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "description": "This is the Chat app repo, you can add your commits here\r # About the project.\r Chat app is a live server application that enables users \r To connect to a room with a 6 digit code, Everyone who enters \r The same code gets added to the same room and can chat\r .\r # Stacks.\r We're using node Js with dependencies which are socket and express",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Psalmcode/Chat-app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Psalmcode/Chat-app/issues"
+  },
+  "homepage": "https://github.com/Psalmcode/Chat-app#readme"
+}
