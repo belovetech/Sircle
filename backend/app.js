@@ -6,8 +6,7 @@ const morgan = require('morgan');
 const path = require('path');
 
 const roomRouter = require('./routes/roomRouter');
-// const fireAutomaticDissolve = require('./utils/fireAutomaticDissolve');
-// const { setTimeout } = require('timers/promises');
+const chatMessageRouter = require('./routes/chatMessageRouter');
 
 // APP
 const app = express();
@@ -30,10 +29,12 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Dissolve Room after 5hrs of active
-// setTimeout(5000, fireAutomaticDissolve);
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, './views/index.html'));
+});
 
 app.use('/rooms', roomRouter);
+app.use('/rooms', chatMessageRouter);
 
 app.use('*', (req, res, next) =>
   res.status(404).json({ Error: 'This route was not defined on this server' })
