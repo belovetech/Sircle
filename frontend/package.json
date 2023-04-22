@@ -1,19 +1,49 @@
 {
-  "name": "chat-app",
-  "version": "1.0.0",
-  "description": "This is the Chat app repo, you can add your commits here\r # About the project.\r Chat app is a live server application that enables users \r To connect to a room with a 6 digit code, Everyone who enters \r The same code gets added to the same room and can chat\r .\r # Stacks.\r We're using node Js with dependencies which are socket and express",
-  "main": "script.js",
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "aos": "^2.3.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.8.0",
+    "react-scripts": "5.0.1",
+    "swiper": "^9.2.4",
+    "web-vitals": "^2.1.4"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Psalmcode/Chat-app.git"
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Psalmcode/Chat-app/issues"
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
-  "homepage": "https://github.com/Psalmcode/Chat-app#readme"
+  "devDependencies": {
+    "aos": "^2.3.4",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.23",
+    "react-icons": "^4.8.0",
+    "swiper": "^9.2.4",
+    "tailwindcss": "^3.3.1"
+  }
 }
