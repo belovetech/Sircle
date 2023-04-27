@@ -1,7 +1,8 @@
 const { config } = require('dotenv');
 const path = require('path');
-const http = require('http');
-
+const { createServer } = require('http');
+const socketio = require('socket.io')();
+const WebSockets = require('./controllers/WebSocketController');
 config({ path: path.join(__dirname, './.config.env') });
 
 // connect database
@@ -9,9 +10,12 @@ require('./database/connection');
 
 const app = require('./app');
 
-const server = http.createServer(app);
-const port = process.env.PORT || 3000;
+const httpServer = createServer(app);
+global.io = socketio.listen(httpServer);
+global.io.on('connection', WebSockets.connection);
 
-server.listen(port, () => {
+const port = process.env.PORT || 3000;
+httpServer.listen(port);
+httpServer.on('listening', () => {
   console.log(`Server listening on port ${port}....`);
 });

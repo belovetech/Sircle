@@ -7,6 +7,7 @@ const generateRoomPassCode = require('../utils/generateRoomPassCode');
 const formatResponse = require('../utils/formatResponse');
 const error500Handler = require('../utils/error500Handler');
 const convertMsToTime = require('../utils/convertMsToTime');
+const makeValidation = require('@withvoid/make-validation');
 
 class RoomController {
   static async getStatus(req, res, next) {
@@ -31,14 +32,19 @@ class RoomController {
 
   static async createRoom(req, res, next) {
     try {
-      const passCode = generateRoomPassCode();
-      const { userName } = req.body;
-      // eslint-disable-next-line no-restricted-globals
-      if (!userName || !isNaN(userName)) {
-        return res
-          .status(400)
-          .json({ error: 'Kindly provide a valid username' });
+      const validation = makeValidation((types) => ({
+        payload: req.body,
+        checks: {
+          userName: { type: types.string },
+        },
+      }));
+
+      if (!validation.success) {
+        return res.status(400).json({ ...validation });
       }
+
+      const { userName } = req.body;
+      const passCode = generateRoomPassCode();
       if (!passCode) {
         return res.status(500).json({ error: 'Something went wrong' });
       }
@@ -52,7 +58,10 @@ class RoomController {
       return res.status(201).json({
         id: room._id,
         passCode: room.passCode,
-        admin: member.userName,
+        admin: {
+          id: member._id,
+          userName: member.userName,
+        },
         members: room.members.length - 1,
       });
     } catch (err) {
@@ -108,14 +117,20 @@ class RoomController {
 
   static async joinRoom(req, res, next) {
     try {
+      const validation = makeValidation((types) => ({
+        payload: req.body,
+        checks: {
+          userName: { type: types.string },
+          passCode: { type: types.string },
+        },
+      }));
+
+      if (!validation.success) {
+        return res.status(400).json({ ...validation });
+      }
       const { userName, passCode } = req.body;
 
-      if (!userName || !isNaN(userName)) {
-        return res
-          .status(400)
-          .json({ error: 'Kindly provide a valid username' });
-      }
-      if (!passCode || passCode.length < 7) {
+      if (passCode.length < 7 || passCode.length > 7) {
         return res
           .status(400)
           .json({ error: 'Provide the valid room passCode' });
